@@ -1,0 +1,27 @@
+<?php
+// database/migrations/2024_01_01_000002_create_system_config_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSystemConfigTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('system_config', function (Blueprint $table) {
+            $table->id();
+            $table->string('config_key', 100)->unique();
+            $table->text('config_value');
+            $table->enum('data_type', ['string', 'number', 'boolean', 'json', 'array'])->default('string');
+            $table->text('description')->nullable();
+            $table->boolean('is_encrypted')->default(false);
+            $table->timestamps();
+        });
+    }
+    
+    public function down()
+    {
+        Schema::dropIfExists('system_config');
+    }
+}
