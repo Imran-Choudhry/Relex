@@ -1,0 +1,60 @@
+<?php
+// routes/web.php
+
+use App\Http\Controllers\Auth\CustomLoginController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserManagementController;
+
+// Public Routes
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// Authentication Routes
+Route::get('/login', [CustomLoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [CustomLoginController::class, 'login']);
+Route::post('/logout', [CustomLoginController::class, 'logout'])->name('logout');
+
+// Protected Routes
+Route::middleware(['auth'])->group(function () {
+    
+    // Dashboard Routes
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Role-Specific Dashboards
+    Route::get('/super-admin/dashboard', function () {
+        return app(DashboardController::class)->superAdminDashboard();
+    })->name('super_admin.dashboard')->middleware(['role:super_admin']);
+    
+    Route::get('/manager/dashboard', function () {
+        return app(DashboardController::class)->managerDashboard();
+    })->name('manager.dashboard')->middleware(['role:manager']);
+    
+    Route::get('/provider/dashboard', function () {
+        return app(DashboardController::class)->providerDashboard();
+    })->name('provider.dashboard')->middleware(['role:provider']);
+    
+    Route::get('/client/dashboard', function () {
+        return app(DashboardController::class)->clientDashboard();
+    })->name('client.dashboard')->middleware(['role:client']);
+    
+    // User Management Routes
+    Route::prefix('users')->group(function () {
+        Route::get('/manage/{role}', [UserManagementController::class, 'index'])
+            ->name('users.manage')
+            ->middleware(['hierarchy']);
+        
+        Route::get('/create/{role}', [UserManagementController::class, 'create'])
+            ->name('users.create')
+            ->middleware(['hierarchy']);
+        
+        Route::post('/store', [UserManagementController::class, 'store'])
+            ->name('users.store')
+            ->middleware(['hierarchy']);
+    });
+    
+    // Profile
+    Route::get('/profile', function () {
+        return view('profile.index');
+    })->name('profile');
+});
